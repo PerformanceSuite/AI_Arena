@@ -1,0 +1,10 @@
+{
+  "hooks": {
+    "SessionEnd": {
+      "scripts": [
+        ".claude/cleanup.sh",
+        ".claude/rotate-memory.sh"
+      ]
+    }
+  }
+}
