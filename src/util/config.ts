@@ -26,12 +26,21 @@ export interface ArenaConfig {
 export function loadConfig(path: string = 'arena.config.yaml'): ArenaConfig {
   const content = readFileSync(path, 'utf-8');
 
-  // Substitute ${VAR} with process.env.VAR
-  const substituted = content.replace(/\$\{([^}]+)\}/g, (_, varName) => {
+  // Substitute ${VAR} or ${VAR:-default} with process.env.VAR
+  const substituted = content.replace(/\$\{([^}]+)\}/g, (_, captured) => {
+    const parts = captured.split(':-');
+    const varName = parts[0];
+    const defaultValue = parts[1];
+
     const value = process.env[varName];
+
     if (!value) {
+      if (defaultValue !== undefined) {
+        return defaultValue;
+      }
       throw new Error(`Missing required environment variable: ${varName}`);
     }
+
     return value;
   });
 
