@@ -32,6 +32,13 @@ export function getAllProviders(): ProviderAdapter[] {
 }
 
 /**
+ * Register a provider adapter (useful for testing)
+ */
+export function registerProvider(name: string, adapter: ProviderAdapter): void {
+  registry.set(name, adapter);
+}
+
+/**
  * Configure all providers from config
  */
 export async function configureProviders(config: ArenaConfig): Promise<void> {
