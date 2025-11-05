@@ -9,14 +9,14 @@ const MessageSchema = z.object({
   timestamp: z.string().optional(),
   attachments: z.array(z.any()).optional(),
   citations: z.array(z.string()).optional(),
-  meta: z.record(z.any()).optional()
+  meta: z.record(z.string(), z.any()).optional()
 });
 
 const CNFSchema = z.object({
   sessionId: z.string(),
   messages: z.array(MessageSchema),
   artifacts: z.array(z.any()).optional(),
-  scratch: z.record(z.any()).optional(),
+  scratch: z.record(z.string(), z.any()).optional(),
   tags: z.array(z.string()).optional(),
   locale: z.string().optional(),
   timezone: z.string().optional()
