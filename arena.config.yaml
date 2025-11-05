@@ -1,29 +1,23 @@
+# AI Arena Configuration
+# Environment variables are substituted automatically
+
 providers:
   openai:
     apiKey: ${OPENAI_API_KEY}
     models:
-      - id: gpt-4o
       - id: gpt-4o-mini
-
-  anthropic:
-    apiKey: ${ANTHROPIC_API_KEY}
-    models:
-      - id: claude-3-5-sonnet-20241022
-      - id: claude-3-5-haiku-20241022
+        maxTokens: 4096
+      - id: gpt-4o
+        maxTokens: 4096
 
   google:
-    apiKey: ${GOOGLE_API_KEY}
+    apiKey: ${GEMINI_API_KEY}
     models:
-      - id: gemini-1.5-pro
-      - id: gemini-1.5-flash
-
-  local:
-    endpoint: http://127.0.0.1:4000
-    models:
-      - id: llama-3.1-8b
+      - id: gemini-2.5-flash
+        maxTokens: 8192
+      - id: gemini-2.5-pro
+        maxTokens: 8192
 
 server:
   http:
     port: 3457
-  nats:
-    url: ${NATS_URL:-nats://127.0.0.1:4222}

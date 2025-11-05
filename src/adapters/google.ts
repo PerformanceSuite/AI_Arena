@@ -13,9 +13,11 @@ export class GoogleAdapter implements ProviderAdapter {
 
   async listModels(): Promise<string[]> {
     return [
-      'gemini-1.5-pro',
-      'gemini-1.5-flash',
-      'gemini-pro'
+      'gemini-2.5-pro',
+      'gemini-2.5-flash',
+      'gemini-2.0-flash',
+      'gemini-pro-latest',
+      'gemini-flash-latest'
     ];
   }
 
