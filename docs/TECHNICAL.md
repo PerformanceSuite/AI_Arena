@@ -448,6 +448,49 @@ RUN_LIVE_TESTS=false               # Enable smoke tests with real APIs
 - No shared mutable state
 - Provider failures don't affect others
 
+## Phase 1 Implementation
+
+### Completed Components
+
+#### CNF System
+- TypeScript types in `src/cnf/types.ts`
+- Zod validation schema in `src/cnf/schema.ts`
+- Transform functions: `appendMessage`, `extractLastMessage`, `redactSecrets`
+
+#### Provider Adapters
+- **OpenAI**: Full implementation with chat completions API
+- **Anthropic**: Full implementation with Messages API and system message extraction
+- **Google**: Full implementation with Gemini API and chat history support
+- **Local**: LiteLLM/Ollama proxy via OpenAI-compatible endpoint
+- Registry pattern for dynamic provider loading
+
+#### Judging System
+- **HeuristicJudge**: Length, keyword, structure scoring (fast, free)
+- **LLMJudge**: Structured JSON scoring with any provider model
+- Pluggable judge architecture for easy extension
+
+#### Competition Engine
+- **Round-Robin**: Parallel execution, weighted scoring, graceful degradation
+- Provider failure handling
+- Multi-judge composite scoring
+
+#### API Layer
+- **HTTP Server**: Hono-based REST API (port 3457)
+- Routes: `/health`, `/models`, `/invoke`, `/compete`
+- JSON validation with error handling
+
+#### Testing
+- Unit tests for all core modules (>80% coverage)
+- Integration tests with MockAdapter
+- Optional smoke tests for live API validation
+
+### Architecture Highlights
+
+1. **Stateless Adapters**: All conversation state in CNF, adapters are pure functions
+2. **Plugin System**: Easy to add providers (implement interface) and judges (extend base)
+3. **Error Resilience**: Provider failures don't crash competitions
+4. **Type Safety**: Full TypeScript with Zod runtime validation
+
 ---
 
 *Technical reference - updated with implementation*

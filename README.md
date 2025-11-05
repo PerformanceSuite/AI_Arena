@@ -4,10 +4,10 @@
 
 AI Arena is a standalone tool that provides a single interface across multiple AI providers, enabling AI-to-AI competition, context transfer between models, and intelligent output selection through pluggable judging systems.
 
-[![Phase](https://img.shields.io/badge/phase-1%20in%20progress-yellow)](docs/ROADMAP.md)
+[![Phase](https://img.shields.io/badge/phase-1%20complete-green)](docs/ROADMAP.md)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-**📋 [Phase 1 Implementation Plan](docs/plans/2025-11-04-phase1-implementation-design.md)** - Detailed design and 3-week roadmap
+**✅ [Phase 1 Complete](docs/plans/2025-11-05-phase1-implementation-plan.md)** - See implementation plan and results
 
 ## Features
 
@@ -37,53 +37,62 @@ AI Arena is a standalone tool that provides a single interface across multiple A
 ### Installation
 
 ```bash
-# Clone the repository
 git clone https://github.com/PerformanceSuite/AI_Arena.git
 cd AI_Arena
-
-# Install dependencies
 pnpm install
-
-# Build
 pnpm build
 ```
 
 ### Configuration
 
-Create `arena.config.yaml`:
+1. Copy `.env.example` to `.env`:
+   ```bash
+   cp .env.example .env
+   ```
 
-```yaml
-providers:
-  openai:
-    apiKey: ${OPENAI_API_KEY}
-    models:
-      - id: gpt-4o
-      - id: gpt-4o-mini
-  anthropic:
-    apiKey: ${ANTHROPIC_API_KEY}
-    models:
-      - id: claude-3-5-sonnet-20241022
+2. Add your API keys to `.env`:
+   ```bash
+   OPENAI_API_KEY=sk-...
+   ANTHROPIC_API_KEY=sk-ant-...
+   GOOGLE_API_KEY=...
+   ```
 
-judging:
-  defaultJudge: openai:gpt-4o-mini
-  heuristics:
-    enable: true
-```
+3. (Optional) Customize `arena.config.yaml` for models and settings
 
-Set environment variables:
+### Usage
 
+**Start the server:**
 ```bash
-export OPENAI_API_KEY=sk-...
-export ANTHROPIC_API_KEY=sk-ant-...
-```
-
-### Run
-
-```bash
-# Start the server
 pnpm dev
+```
 
-# Server runs on http://localhost:3457
+**Run a competition:**
+```bash
+curl -X POST http://localhost:3457/compete \
+  -H "Content-Type: application/json" \
+  -d '{
+    "cnf": {
+      "sessionId": "demo",
+      "messages": [{"role": "user", "content": "Write a haiku about TypeScript"}]
+    },
+    "spec": {
+      "providers": [
+        {"name": "openai", "model": "gpt-4o-mini"},
+        {"name": "anthropic", "model": "claude-3-5-haiku-20241022"}
+      ],
+      "mode": "round-robin",
+      "rubric": {
+        "weights": {"structure": 0.5, "length": 0.5}
+      }
+    }
+  }'
+```
+
+**Run tests:**
+```bash
+pnpm test              # Unit + integration (mocked)
+pnpm test:coverage     # With coverage report
+pnpm test:smoke        # Live API tests (optional)
 ```
 
 ## Usage
@@ -332,18 +341,20 @@ weights:
 
 ## Roadmap
 
-### Phase 1 (Current) - Foundation
-- ✅ CNF schema and transform pipeline
-- 🚧 Provider adapters (OpenAI, Anthropic, Google, Local)
-- 🚧 Round-robin competition
-- 🚧 Pluggable judge system
-- 🚧 HTTP API and MCP server
+### Phase 1 (Complete) - Foundation
+- ✅ CNF schema and validation
+- ✅ Provider adapters (OpenAI, Anthropic, Google, Local)
+- ✅ Round-robin competition
+- ✅ Pluggable judge system (Heuristic + LLM)
+- ✅ HTTP API server
+- ✅ >80% test coverage
 
 ### Phase 2 - Advanced Features
 - Debate/Jury/Blend competition modes
 - LLM judge improvements
 - Artifact storage
 - CNF compression
+- MCP server support
 
 ### Phase 3 - Task Executor
 - Proactive task execution
@@ -354,6 +365,7 @@ weights:
 - UI visualization
 - Real-time monitoring
 - Distributed judging
+- NATS mesh integration
 
 See [ROADMAP.md](docs/ROADMAP.md) for details.
 
