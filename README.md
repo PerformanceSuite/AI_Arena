@@ -7,6 +7,8 @@ AI Arena is a standalone tool that provides a single interface across multiple A
 [![Phase](https://img.shields.io/badge/phase-1%20in%20progress-yellow)](docs/ROADMAP.md)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
+**📋 [Phase 1 Implementation Plan](docs/plans/2025-11-04-phase1-implementation-design.md)** - Detailed design and 3-week roadmap
+
 ## Features
 
 ### 🎯 Core Capabilities
