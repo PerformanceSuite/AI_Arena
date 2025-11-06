@@ -46,8 +46,8 @@ export class DebateCoordinator {
     }
 
     const state = this.initializeDebate(config);
-    const cnfA: CNF = { sessionId: 'debate-a', messages: [] };
-    const cnfB: CNF = { sessionId: 'debate-b', messages: [] };
+    let cnfA: CNF = { sessionId: 'debate-a', messages: [] };
+    let cnfB: CNF = { sessionId: 'debate-b', messages: [] };
 
     for (let turn = 0; turn < config.rounds; turn++) {
       const round: DebateRound = {
@@ -65,6 +65,7 @@ export class DebateCoordinator {
         targetModel: config.providerA.split('/')[1]
       });
       round.providerA_response = responseA.outputText || '';
+      cnfA = responseA.updatedCNF;
 
       // Provider B critique
       const adapterB = this.registry.getAdapter(config.providerB);
@@ -78,6 +79,7 @@ export class DebateCoordinator {
         targetModel: config.providerB.split('/')[1]
       });
       round.providerB_critique = responseB.outputText || '';
+      cnfB = responseB.updatedCNF;
 
       // Provider A refine
       cnfA.messages.push(
@@ -89,6 +91,7 @@ export class DebateCoordinator {
         targetModel: config.providerA.split('/')[1]
       });
       round.providerA_refined = refinedA.outputText || '';
+      cnfA = refinedA.updatedCNF;
 
       state.rounds.push(round);
     }
