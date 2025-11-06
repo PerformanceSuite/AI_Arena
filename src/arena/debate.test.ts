@@ -130,4 +130,54 @@ describe('DebateCoordinator', () => {
     expect(state.winner).toBe('tie');
     expect(state.scores).toEqual({ A: 8.0, B: 8.0 });
   });
+
+  it('emits trace events during debate execution', async () => {
+    const mockEmitter = {
+      emit: vi.fn()
+    };
+
+    const mockRegistry = {
+      getAdapter: vi.fn(() => ({
+        chat: vi.fn().mockResolvedValue({
+          outputText: 'Response',
+          updatedCNF: createMockCNF()
+        })
+      }))
+    };
+
+    const config: DebateConfig = {
+      providerA: 'openai/gpt-4o-mini',
+      providerB: 'google/gemini-2.5-flash',
+      prompt: 'Test',
+      rounds: 1,
+      judge: { type: 'llm', provider: 'openai/gpt-4o-mini' }
+    };
+
+    const coordinator = new DebateCoordinator(
+      mockRegistry as any,
+      undefined,
+      mockEmitter as any
+    );
+
+    await coordinator.runDebate(config);
+
+    expect(mockEmitter.emit).toHaveBeenCalledWith(
+      expect.objectContaining({
+        eventType: 'competition.start',
+        data: expect.objectContaining({ mode: 'debate' })
+      })
+    );
+
+    expect(mockEmitter.emit).toHaveBeenCalledWith(
+      expect.objectContaining({
+        eventType: 'debate.turn'
+      })
+    );
+
+    expect(mockEmitter.emit).toHaveBeenCalledWith(
+      expect.objectContaining({
+        eventType: 'competition.end'
+      })
+    );
+  });
 });

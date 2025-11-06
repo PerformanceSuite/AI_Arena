@@ -1,6 +1,7 @@
 import type { CNF } from '../cnf/types';
 import type { ProviderRegistry } from '../adapters/registry';
 import type { Judge } from './judges';
+import type { TraceEmitter } from '../observability/traces';
 
 export interface DebateConfig {
   providerA: string;
@@ -30,7 +31,8 @@ export interface DebateState {
 export class DebateCoordinator {
   constructor(
     private registry?: ProviderRegistry,
-    private judge?: Judge
+    private judge?: Judge,
+    private traceEmitter?: TraceEmitter
   ) {}
 
   initializeDebate(config: DebateConfig): DebateState {
@@ -45,11 +47,32 @@ export class DebateCoordinator {
       throw new Error('ProviderRegistry required for debate execution');
     }
 
+    const sessionId = `debate-${Date.now()}`;
     const state = this.initializeDebate(config);
     let cnfA: CNF = { sessionId: 'debate-a', messages: [] };
     let cnfB: CNF = { sessionId: 'debate-b', messages: [] };
 
+    // Emit start event
+    this.traceEmitter?.emit({
+      timestamp: new Date(),
+      sessionId,
+      eventType: 'competition.start',
+      data: {
+        mode: 'debate',
+        providerA: config.providerA,
+        providerB: config.providerB,
+        rounds: config.rounds
+      }
+    });
+
     for (let turn = 0; turn < config.rounds; turn++) {
+      // Emit turn start
+      this.traceEmitter?.emit({
+        timestamp: new Date(),
+        sessionId,
+        eventType: 'debate.turn',
+        data: { turn: turn + 1, phase: 'start' }
+      });
       const round: DebateRound = {
         turn: turn + 1,
         providerA_response: '',
@@ -94,6 +117,14 @@ export class DebateCoordinator {
       cnfA = refinedA.updatedCNF;
 
       state.rounds.push(round);
+
+      // Emit turn end
+      this.traceEmitter?.emit({
+        timestamp: new Date(),
+        sessionId,
+        eventType: 'debate.turn',
+        data: { turn: turn + 1, phase: 'complete' }
+      });
     }
 
     // Judge final responses
@@ -122,6 +153,17 @@ export class DebateCoordinator {
         state.winner = 'tie';
       }
     }
+
+    // Emit end event
+    this.traceEmitter?.emit({
+      timestamp: new Date(),
+      sessionId,
+      eventType: 'competition.end',
+      data: {
+        winner: state.winner,
+        scores: state.scores
+      }
+    });
 
     return state;
   }
