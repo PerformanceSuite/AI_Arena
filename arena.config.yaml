@@ -10,6 +10,21 @@ providers:
       - id: gpt-4o
         maxTokens: 4096
 
+  anthropic:
+    apiKey: ${ANTHROPIC_API_KEY}
+    models:
+      - id: claude-3-5-sonnet-20241022
+        maxTokens: 4096
+      - id: claude-3-5-haiku-20241022
+        maxTokens: 4096
+
+  xai:
+    apiKey: ${XAI_API_KEY}
+    baseURL: https://api.x.ai/v1
+    models:
+      - id: grok-beta
+        maxTokens: 4096
+
   google:
     apiKey: ${GEMINI_API_KEY}
     models:
@@ -17,6 +32,21 @@ providers:
         maxTokens: 8192
       - id: gemini-2.5-pro
         maxTokens: 8192
+
+infrastructure:
+  compression:
+    strategy: summarize
+    maxTokens: 4000
+    preserveRecent: 5
+
+  artifacts:
+    storageType: filesystem
+    basePath: ./artifacts
+
+  traces:
+    enabled: true
+    format: json
+    minLevel: info
 
 server:
   http:

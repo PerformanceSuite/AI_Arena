@@ -4,6 +4,7 @@ import { OpenAIAdapter } from './openai';
 import { AnthropicAdapter } from './anthropic';
 import { GoogleAdapter } from './google';
 import { LocalAdapter } from './local';
+import { XAIAdapter } from './xai';
 
 const registry = new Map<string, ProviderAdapter>();
 
@@ -12,6 +13,7 @@ registry.set('openai', new OpenAIAdapter());
 registry.set('anthropic', new AnthropicAdapter());
 registry.set('google', new GoogleAdapter());
 registry.set('local', new LocalAdapter());
+registry.set('xai', new XAIAdapter());
 
 /**
  * Get provider adapter by name
