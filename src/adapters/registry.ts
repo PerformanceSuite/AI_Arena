@@ -26,9 +26,13 @@ export class DefaultProviderRegistry implements ProviderRegistry {
 
   /**
    * Get provider adapter by name
+   * Accepts either "provider" or "provider/model" format
    */
   getAdapter(name: string): ProviderAdapter {
-    const provider = this.registry.get(name);
+    // Extract provider name if format is "provider/model"
+    const providerName = name.includes('/') ? name.split('/')[0] : name;
+
+    const provider = this.registry.get(providerName);
     if (!provider) {
       throw new Error(`Unknown provider: ${name}`);
     }
