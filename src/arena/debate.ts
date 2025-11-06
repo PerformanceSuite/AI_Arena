@@ -30,8 +30,15 @@ export interface ProviderRegistry {
   getAdapter(provider: string): ProviderAdapter;
 }
 
+export interface Judge {
+  score(prompt: string, response: string): Promise<{ score: number; reasoning: string }>;
+}
+
 export class DebateCoordinator {
-  constructor(private registry?: ProviderRegistry) {}
+  constructor(
+    private registry?: ProviderRegistry,
+    private judge?: Judge
+  ) {}
 
   initializeDebate(config: DebateConfig): DebateState {
     return {
@@ -94,6 +101,33 @@ export class DebateCoordinator {
       cnfA = refinedA.updatedCNF;
 
       state.rounds.push(round);
+    }
+
+    // Judge final responses
+    if (this.judge) {
+      const lastRound = state.rounds[state.rounds.length - 1];
+
+      const scoreA = await this.judge.score(
+        config.prompt,
+        lastRound.providerA_refined
+      );
+      const scoreB = await this.judge.score(
+        config.prompt,
+        lastRound.providerB_critique
+      );
+
+      state.scores = {
+        A: scoreA.score,
+        B: scoreB.score
+      };
+
+      if (scoreA.score > scoreB.score) {
+        state.winner = 'A';
+      } else if (scoreB.score > scoreA.score) {
+        state.winner = 'B';
+      } else {
+        state.winner = 'tie';
+      }
     }
 
     return state;

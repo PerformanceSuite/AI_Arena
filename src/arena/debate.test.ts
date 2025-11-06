@@ -68,4 +68,35 @@ describe('DebateCoordinator', () => {
     expect(state.rounds[0].providerB_critique).toContain('disagree');
     expect(state.rounds[0].providerA_refined).toContain('critique');
   });
+
+  it('judges debate and declares winner', async () => {
+    const mockJudge = {
+      score: vi.fn()
+        .mockResolvedValueOnce({ score: 7.5, reasoning: 'Good points' })
+        .mockResolvedValueOnce({ score: 8.2, reasoning: 'Better argument' })
+    };
+
+    const mockRegistry = {
+      getAdapter: vi.fn(() => ({
+        chat: vi.fn().mockResolvedValue({
+          outputText: 'Response',
+          updatedCNF: createMockCNF()
+        })
+      }))
+    };
+
+    const config: DebateConfig = {
+      providerA: 'openai/gpt-4o-mini',
+      providerB: 'google/gemini-2.5-flash',
+      prompt: 'Test prompt',
+      rounds: 1,
+      judge: { type: 'llm', provider: 'openai/gpt-4o-mini' }
+    };
+
+    const coordinator = new DebateCoordinator(mockRegistry as any, mockJudge as any);
+    const state = await coordinator.runDebate(config);
+
+    expect(state.winner).toBe('B');
+    expect(state.scores).toEqual({ A: 7.5, B: 8.2 });
+  });
 });
