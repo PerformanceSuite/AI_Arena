@@ -20,6 +20,7 @@ describe('Provider Registry', () => {
     expect(names).toContain('anthropic');
     expect(names).toContain('google');
     expect(names).toContain('local');
+    expect(names).toContain('xai');
   });
 
   it('configures all providers from config', async () => {

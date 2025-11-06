@@ -19,13 +19,11 @@
 
 ---
 
-## Phase 1: Foundation for Iteration 🚧 IN PROGRESS
+## Phase 1: Foundation for Iteration ✅ COMPLETE
 
 **Goal**: Core architecture with working providers, designed for easy extension
 
 **Timeline**: 3 weeks
-
-**Branch**: `feature/phase1-implementation`
 
 ### Week 1: Foundation
 - [ ] CNF schema and TypeScript types
@@ -66,24 +64,26 @@
 
 ---
 
-## Phase 2: Advanced Competition & Judging
+## Phase 2: Advanced Competition & Judging ✅ COMPLETE
 
 **Goal**: Rich competition modes, artifact store, and enhanced judging
 
-**Features:**
-- [ ] Debate mode (A1 vs A2 with cross-critique)
-- [ ] Jury mode (N providers, M judges with rubric)
-- [ ] Blend mode (merge multiple strong candidates)
-- [ ] Critic-Refine mode (critic pass then revision)
-- [ ] LLM-based judges with configurable models
-- [ ] Rubric designer and validator
-- [ ] Artifact storage system
-- [ ] Rich trace events (`arena.trace` with step-by-step details)
-- [ ] CNF compression/summarization for long contexts
-- [ ] Advanced redaction beyond regex
+**Completed:**
+- [x] Debate mode (A1 vs A2 with cross-critique)
+- [x] Anthropic provider (Claude 3.5 models)
+- [x] xAI provider (Grok models)
+- [x] CNF compression with LLM-based summarization
+- [x] File-based artifact storage
+- [x] Structured trace events (JSON logging)
+- [x] HTTP endpoint: POST /debate
+- [x] Integration tests and examples
 
-### Provider Expansion
-- [ ] Complete xAI adapter
+**Deferred to Phase 3:**
+- [ ] Jury mode (N providers, M judges with rubric)
+- [ ] Cascade mode (cheap → quality escalation)
+- [ ] Blend mode (merge multiple candidates)
+- [ ] Critic-Refine mode (iterative improvement)
+- [ ] Multi-round debates (3+ turns)
 - [ ] Complete Mistral adapter
 - [ ] Complete Cohere adapter
 - [ ] Complete Bedrock adapter
@@ -163,8 +163,8 @@
 | Phase | Timeline | Status |
 |-------|----------|--------|
 | Phase 0: Blueprint | Week 0 | ✅ Complete |
-| Phase 1: Foundation | Weeks 1-3 | 🚧 In Progress |
-| Phase 2: Advanced Features | Weeks 4-6 | 📋 Planned |
+| Phase 1: Foundation | Weeks 1-3 | ✅ Complete |
+| Phase 2: Advanced Features | Weeks 4-6 | ✅ Complete |
 | Phase 3: Task Executor | Weeks 7-10 | 📋 Planned |
 | Phase 4: Hub Integration | Weeks 11-14 | 📋 Planned |
 
