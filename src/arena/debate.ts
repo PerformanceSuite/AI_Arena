@@ -1,5 +1,6 @@
 import type { CNF } from '../cnf/types';
-import type { ProviderAdapter } from '../adapters/types';
+import type { ProviderRegistry } from '../adapters/registry';
+import type { Judge } from './judges';
 
 export interface DebateConfig {
   providerA: string;
@@ -24,14 +25,6 @@ export interface DebateState {
   rounds: DebateRound[];
   winner?: 'A' | 'B' | 'tie';
   scores?: { A: number; B: number };
-}
-
-export interface ProviderRegistry {
-  getAdapter(provider: string): ProviderAdapter;
-}
-
-export interface Judge {
-  score(prompt: string, response: string): Promise<{ score: number; reasoning: string }>;
 }
 
 export class DebateCoordinator {

@@ -99,4 +99,35 @@ describe('DebateCoordinator', () => {
     expect(state.winner).toBe('B');
     expect(state.scores).toEqual({ A: 7.5, B: 8.2 });
   });
+
+  it('declares tie when both providers have equal scores', async () => {
+    const mockJudge = {
+      score: vi.fn()
+        .mockResolvedValueOnce({ score: 8.0, reasoning: 'Strong argument' })
+        .mockResolvedValueOnce({ score: 8.0, reasoning: 'Equally strong argument' })
+    };
+
+    const mockRegistry = {
+      getAdapter: vi.fn(() => ({
+        chat: vi.fn().mockResolvedValue({
+          outputText: 'Response',
+          updatedCNF: createMockCNF()
+        })
+      }))
+    };
+
+    const config: DebateConfig = {
+      providerA: 'openai/gpt-4o-mini',
+      providerB: 'google/gemini-2.5-flash',
+      prompt: 'Test prompt',
+      rounds: 1,
+      judge: { type: 'llm', provider: 'openai/gpt-4o-mini' }
+    };
+
+    const coordinator = new DebateCoordinator(mockRegistry as any, mockJudge as any);
+    const state = await coordinator.runDebate(config);
+
+    expect(state.winner).toBe('tie');
+    expect(state.scores).toEqual({ A: 8.0, B: 8.0 });
+  });
 });
