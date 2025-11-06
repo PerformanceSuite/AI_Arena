@@ -95,6 +95,45 @@ pnpm test:coverage     # With coverage report
 pnpm test:smoke        # Live API tests (optional)
 ```
 
+## Phase 2 Features (Current)
+
+### Debate Mode
+
+Run AI-to-AI debates with cross-critique and refinement:
+
+```bash
+curl -X POST http://localhost:3457/debate \
+  -H "Content-Type: application/json" \
+  -d '{
+    "providerA": "openai/gpt-4o-mini",
+    "providerB": "anthropic/claude-3-5-sonnet-20241022",
+    "prompt": "What is better: tabs or spaces?",
+    "rounds": 1,
+    "judge": {
+      "type": "llm",
+      "provider": "openai/gpt-4o-mini"
+    }
+  }'
+```
+
+### New Providers
+
+- **Anthropic (Claude)**: claude-3-5-sonnet-20241022, claude-3-5-haiku-20241022, claude-3-opus-20240229
+- **xAI (Grok)**: grok-beta, grok-vision-beta
+
+### Infrastructure
+
+- **CNF Compression**: Automatic summarization for long contexts
+- **Artifact Storage**: File-based storage for debate transcripts and outputs
+- **Structured Traces**: JSON logging for observability and debugging
+
+### Example
+
+```bash
+# Run debate example
+pnpm tsx examples/debate-example.ts
+```
+
 ## Usage
 
 ### HTTP API
@@ -221,15 +260,15 @@ interface ProviderAdapter {
 
 **Phase 1 Providers:**
 - ✅ OpenAI (GPT-4, GPT-4o)
-- ✅ Anthropic (Claude 3.5)
-- ✅ Google (Gemini 1.5)
+- ✅ Google (Gemini 2.5)
 - ✅ Local (LiteLLM/Ollama)
 
 **Phase 2 Providers:**
-- 📋 xAI (Grok)
-- 📋 Mistral
-- 📋 Cohere
-- 📋 AWS Bedrock
+- ✅ Anthropic (Claude 3.5)
+- ✅ xAI (Grok)
+- 📋 Mistral (Phase 3)
+- 📋 Cohere (Phase 3)
+- 📋 AWS Bedrock (Phase 3)
 
 ### Three-Layer System
 
@@ -343,18 +382,21 @@ weights:
 
 ### Phase 1 (Complete) - Foundation
 - ✅ CNF schema and validation
-- ✅ Provider adapters (OpenAI, Anthropic, Google, Local)
+- ✅ Provider adapters (OpenAI, Google, Local)
 - ✅ Round-robin competition
 - ✅ Pluggable judge system (Heuristic + LLM)
 - ✅ HTTP API server
 - ✅ >80% test coverage
 
-### Phase 2 - Advanced Features
-- Debate/Jury/Blend competition modes
-- LLM judge improvements
-- Artifact storage
-- CNF compression
-- MCP server support
+### Phase 2 (Complete) - Advanced Features
+- ✅ Debate mode (2-turn AI-to-AI)
+- ✅ Anthropic provider (Claude 3.5)
+- ✅ xAI provider (Grok)
+- ✅ CNF compression with summarization
+- ✅ Artifact storage system
+- ✅ Structured trace events
+- ✅ HTTP endpoint: POST /debate
+- 📋 Jury/Blend modes (deferred to Phase 3)
 
 ### Phase 3 - Task Executor
 - Proactive task execution
