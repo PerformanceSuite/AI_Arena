@@ -22,8 +22,8 @@ describe('GoogleAdapter', () => {
     await adapter.configure({ apiKey: 'test-key' });
     const models = await adapter.listModels();
 
-    expect(models).toContain('gemini-1.5-pro');
-    expect(models).toContain('gemini-1.5-flash');
+    expect(models).toContain('gemini-2.5-pro');
+    expect(models).toContain('gemini-2.5-flash');
   });
 
   it('converts CNF to Google format and back', async () => {
@@ -49,7 +49,7 @@ describe('GoogleAdapter', () => {
       messages: [{ role: 'user', content: 'Hi' }]
     };
 
-    const result = await adapter.chat({ cnf, targetModel: 'gemini-1.5-pro' });
+    const result = await adapter.chat({ cnf, targetModel: 'gemini-2.5-pro' });
 
     expect(result.outputText).toBe('Hello from Gemini!');
     expect(result.usage?.total).toBe(18);
