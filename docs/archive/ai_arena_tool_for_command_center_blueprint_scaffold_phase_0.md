@@ -11,7 +11,7 @@
 - **CommandCenter bridge:** NATS mesh bus topics `arena.*` + tool registry manifest
 - **Core concepts:**
   - **Context Normal Form (CNF):** portable conversation state + artifacts
-  - **Provider Adapters:** OpenAI, Anthropic, Google, xAI, Mistral, Cohere, Bedrock, Local (LiteLLM/Ollama)
+  - **Provider Adapters:** OpenAI, Anthropic, Google, xAI, and Ollama)
   - **Competition Modes:** Round‑Robin, Debate, Jury, Critic‑Refine, Blend, Cascade
   - **Judging:** rubric‑driven scoring by multiple models and heuristics
   - **Proactive Executor:** TaskGraph (Plan → Research → Generate → Verify → Execute), with tool hooks

@@ -1,436 +1,129 @@
 # AI Arena
 
-> Unified multi-AI interface with intelligent competition and judging
+A multi-AI competition platform that pits language models against each other and judges their outputs. Supports OpenAI, Anthropic, Google, xAI, and local models through a unified API.
 
-AI Arena is a standalone tool that provides a single interface across multiple AI providers, enabling AI-to-AI competition, context transfer between models, and intelligent output selection through pluggable judging systems.
+## What It Does
 
-[![Phase](https://img.shields.io/badge/phase-1%20complete-green)](docs/ROADMAP.md)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+- **Unified Interface**: Single API to invoke any supported AI provider
+- **Competition**: Run the same prompt against multiple models, score and rank results
+- **Debate Mode**: Two models argue and refine their positions, then a judge picks a winner
+- **Context Normal Form (CNF)**: Portable conversation format that bridges provider differences
+- **Pluggable Judging**: Heuristic scoring (length, structure, keywords) and LLM-as-judge
 
-**✅ [Phase 1 Complete](docs/plans/2025-11-05-phase1-implementation-plan.md)** - See implementation plan and results
+## Status
 
-## Features
-
-### 🎯 Core Capabilities
-
-- **Unified Multi-AI Interface** - Single API across OpenAI, Anthropic, Google, and local models
-- **AI Competition** - Run multiple models against the same prompt and select the best output
-- **Context Bridge** - Transfer conversation state between providers using Context Normal Form (CNF)
-- **Pluggable Judges** - Heuristic and LLM-based scoring with customizable rubrics
-- **Multiple Interfaces** - HTTP API, MCP server, optional NATS integration
-
-### 🏆 Competition Modes
-
-- **Round-Robin** - All providers compete, highest-scored wins
-- **Cascade** - Start with cheap models, escalate to quality as needed
-- **Debate, Jury, Blend** _(Phase 2)_ - Advanced multi-turn interactions
-
-### ⚖️ Judging System
-
-- **Heuristic Judges** - Fast, deterministic scoring (length, keywords, structure)
-- **LLM Judges** - AI-powered evaluation with reasoning
-- **Composite Scoring** - Weighted combination of multiple judges
-- **Custom Rubrics** - YAML/JSON-based criteria definition
+- **Phase 1** (Foundation): Complete — adapters, CNF, competition, judging, HTTP API
+- **Phase 2** (Advanced): Complete — debate mode, Anthropic/xAI adapters, compression, artifacts, traces
+- **Phase 3** (Research-augmented competition): Designed, not yet implemented
+- **59 tests passing**, build clean
 
 ## Quick Start
 
-### Installation
-
 ```bash
-git clone https://github.com/PerformanceSuite/AI_Arena.git
-cd AI_Arena
 pnpm install
-pnpm build
+cp .env.example .env    # Add your API keys
+pnpm dev                # Starts on http://localhost:3457
 ```
 
-### Configuration
+## API
 
-1. Copy `.env.example` to `.env`:
-   ```bash
-   cp .env.example .env
-   ```
+Server runs on `http://localhost:3457`.
 
-2. Add your API keys to `.env`:
-   ```bash
-   OPENAI_API_KEY=sk-...
-   ANTHROPIC_API_KEY=sk-ant-...
-   GOOGLE_API_KEY=...
-   ```
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/health` | Health check, lists configured providers |
+| GET | `/models` | List all available models per provider |
+| POST | `/invoke` | Send a prompt to a single provider |
+| POST | `/compete` | Run competition across multiple providers |
+| POST | `/debate` | Run adversarial debate between two providers |
 
-3. (Optional) Customize `arena.config.yaml` for models and settings
+### Competition Example
 
-### Usage
-
-**Start the server:**
-```bash
-pnpm dev
-```
-
-**Run a competition:**
 ```bash
 curl -X POST http://localhost:3457/compete \
   -H "Content-Type: application/json" \
   -d '{
     "cnf": {
-      "sessionId": "demo",
-      "messages": [{"role": "user", "content": "Write a haiku about TypeScript"}]
+      "sessionId": "test-1",
+      "messages": [{"role": "user", "content": "Explain quantum computing"}]
     },
     "spec": {
       "providers": [
-        {"name": "openai", "model": "gpt-4o-mini"},
-        {"name": "anthropic", "model": "claude-3-5-haiku-20241022"}
+        {"name": "openai", "model": "gpt-4o"},
+        {"name": "anthropic", "model": "claude-3-5-sonnet-20241022"}
       ],
       "mode": "round-robin",
       "rubric": {
-        "weights": {"structure": 0.5, "length": 0.5}
+        "weights": {"length": 0.3, "structure": 0.3, "keywords": 0.4},
+        "keywords": ["quantum", "qubits", "superposition"]
       }
     }
   }'
 ```
 
-**Run tests:**
-```bash
-pnpm test              # Unit + integration (mocked)
-pnpm test:coverage     # With coverage report
-pnpm test:smoke        # Live API tests (optional)
-```
-
-## Phase 2 Features (Current)
-
-### Debate Mode
-
-Run AI-to-AI debates with cross-critique and refinement:
+### Debate Example
 
 ```bash
 curl -X POST http://localhost:3457/debate \
   -H "Content-Type: application/json" \
   -d '{
-    "providerA": "openai/gpt-4o-mini",
+    "providerA": "openai/gpt-4o",
     "providerB": "anthropic/claude-3-5-sonnet-20241022",
-    "prompt": "What is better: tabs or spaces?",
-    "rounds": 1,
-    "judge": {
-      "type": "llm",
-      "provider": "openai/gpt-4o-mini"
-    }
+    "prompt": "Is TypeScript better than JavaScript?",
+    "rounds": 2,
+    "judge": {"type": "heuristic"}
   }'
 ```
-
-### New Providers
-
-- **Anthropic (Claude)**: claude-3-5-sonnet-20241022, claude-3-5-haiku-20241022, claude-3-opus-20240229
-- **xAI (Grok)**: grok-beta, grok-vision-beta
-
-### Infrastructure
-
-- **CNF Compression**: Automatic summarization for long contexts
-- **Artifact Storage**: File-based storage for debate transcripts and outputs
-- **Structured Traces**: JSON logging for observability and debugging
-
-### Example
-
-```bash
-# Run debate example
-pnpm tsx examples/debate-example.ts
-```
-
-## Usage
-
-### HTTP API
-
-#### Run a Competition
-
-```bash
-curl -X POST http://localhost:3457/compete \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "cnf": {
-      "sessionId": "demo-123",
-      "messages": [
-        {"role": "user", "content": "Write a haiku about AI"}
-      ]
-    },
-    "spec": {
-      "providers": [
-        {"name": "openai", "model": "gpt-4o-mini"},
-        {"name": "anthropic", "model": "claude-3-5-sonnet-20241022"}
-      ],
-      "mode": "round-robin",
-      "rubric": {
-        "weights": {"creativity": 0.5, "structure": 0.5},
-        "keywords": ["haiku", "syllables"]
-      }
-    }
-  }'
-```
-
-Response:
-
-```json
-{
-  "winner": {
-    "id": "anthropic:claude-3-5-sonnet-20241022",
-    "text": "Silicon minds think\nPatterns emerge from the code\nWisdom without breath",
-    "score": 0.92,
-    "breakdown": {
-      "creativity": 0.95,
-      "structure": 0.89
-    }
-  },
-  "leaderboard": [...]
-}
-```
-
-#### Single Provider Invocation
-
-```bash
-curl -X POST http://localhost:3457/invoke \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "cnf": {
-      "sessionId": "chat-1",
-      "messages": [
-        {"role": "user", "content": "Hello!"}
-      ]
-    },
-    "provider": {"name": "openai", "model": "gpt-4o-mini"}
-  }'
-```
-
-#### List Available Models
-
-```bash
-curl http://localhost:3457/models
-```
-
-### MCP Server
-
-AI Arena exposes MCP tools for use in Claude Desktop, Cline, and other MCP clients:
-
-```json
-{
-  "mcpServers": {
-    "ai-arena": {
-      "command": "node",
-      "args": ["path/to/AI_Arena/dist/index.js"]
-    }
-  }
-}
-```
-
-Available tools:
-- `arena_compete` - Run AI competition
-- `arena_invoke` - Single provider chat
-- `arena_judge` - Score candidates
-- `arena_list_models` - List available models
 
 ## Architecture
 
-### Context Normal Form (CNF)
-
-CNF is the universal conversation format that bridges different AI providers:
-
-```typescript
-{
-  sessionId: "unique-id",
-  messages: [
-    {
-      role: "user" | "assistant" | "system" | "tool",
-      content: "message text",
-      attachments?: [...],
-      citations?: [...]
-    }
-  ],
-  artifacts?: [...],  // Generated outputs
-  scratch?: {...}     // Temporary state
-}
+```
+src/
+├── index.ts              # Bootstrap entry point
+├── cnf/                  # Context Normal Form (schema, transforms, compression)
+├── adapters/             # Provider adapters (OpenAI, Anthropic, Google, xAI, local)
+├── arena/                # Competition, debate, judges (heuristic + LLM)
+├── artifacts/            # Artifact storage
+├── core/                 # Operation handlers (invoke, compete)
+├── http/                 # Hono HTTP server and routes
+├── observability/        # Structured trace events
+└── util/                 # Config loader (YAML + env var substitution)
 ```
 
-### Provider Adapters
+**CNF**: Normalized conversation schema (`sessionId`, `messages[]`, `artifacts[]`, `scratch`). All providers translate to/from CNF. Supports compression, secret redaction, and message transforms.
 
-Each AI provider implements the `ProviderAdapter` interface:
+**Provider Adapters**: Implement `ProviderAdapter` interface (configure, listModels, chat). Registry maps names to adapters, configured from `arena.config.yaml`.
 
-```typescript
-interface ProviderAdapter {
-  configure(config: ProviderConfig): Promise<void>;
-  listModels(): Promise<ModelSpec[]>;
-  chat(args: ChatArgs): Promise<ChatResult>;
-}
-```
+**Competition**: Round-robin sends the prompt to all providers in parallel, judges score each response, leaderboard sorted by weighted score.
 
-**Phase 1 Providers:**
-- ✅ OpenAI (GPT-4, GPT-4o)
-- ✅ Google (Gemini 2.5)
-- ✅ Local (LiteLLM/Ollama)
+**Debate**: Provider A responds → Provider B critiques → Provider A refines. Repeats for N rounds. Judge scores final outputs and declares winner.
 
-**Phase 2 Providers:**
-- ✅ Anthropic (Claude 3.5)
-- ✅ xAI (Grok)
-- 📋 Mistral (Phase 3)
-- 📋 Cohere (Phase 3)
-- 📋 AWS Bedrock (Phase 3)
+**Judging**: `HeuristicJudge` scores length/keywords/structure. `LLMJudge` asks another model to evaluate. Judges compose via weighted scoring.
 
-### Three-Layer System
+## Configuration
+
+`arena.config.yaml` defines providers, models, and server settings. API keys injected via `${ENV_VAR}` syntax with optional defaults (`${VAR:-default}`).
+
+## Environment Variables
 
 ```
-Interface Layer (HTTP/MCP/NATS)
-           ↓
-Core Layer (CNF/Competition/Judges)
-           ↓
-Provider Layer (OpenAI/Anthropic/Google/Local)
+OPENAI_API_KEY      # Required for OpenAI
+ANTHROPIC_API_KEY   # Required for Anthropic
+GOOGLE_API_KEY      # Required for Google/Gemini
+XAI_API_KEY         # Optional, for xAI/Grok
 ```
-
-See [TECHNICAL.md](docs/TECHNICAL.md) for detailed architecture.
 
 ## Development
 
-### Commands
-
 ```bash
-pnpm install      # Install dependencies
-pnpm build        # Compile TypeScript
-pnpm dev          # Run with hot reload
-pnpm test         # Run unit + integration tests
-pnpm test:smoke   # Run live API tests (requires API keys)
+pnpm build            # Compile TypeScript
+pnpm dev              # Run with tsx (hot reload)
+pnpm test             # Run all tests
+pnpm test:watch       # Watch mode
+pnpm test:coverage    # Coverage report
+pnpm test:smoke       # Live API tests (RUN_LIVE_TESTS=true)
 ```
 
-### Testing
+## Tech Stack
 
-**Unit Tests** - All mocked, no API calls:
-```bash
-pnpm test
-```
-
-**Smoke Tests** - Optional live API validation:
-```bash
-export RUN_LIVE_TESTS=true
-pnpm test:smoke
-```
-
-### Project Structure
-
-```
-src/
-  index.ts              # Entry point
-  http.ts, mcp.ts, nats-bridge.ts
-  core/
-    operations.ts       # Unified operation handlers
-  cnf/
-    schema.ts, transform.ts
-  adapters/
-    openai.ts, anthropic.ts, google.ts, local.ts
-  arena/
-    competition.ts, judges.ts, rubric.ts
-  util/
-    config.ts, logging.ts, validation.ts
-```
-
-## Documentation
-
-- **[Design Document](docs/plans/2025-11-04-phase1-implementation-design.md)** - Phase 1 design
-- **[Technical Details](docs/TECHNICAL.md)** - Architecture and implementation
-- **[Roadmap](docs/ROADMAP.md)** - Feature timeline
-- **[CLAUDE.md](CLAUDE.md)** - Guidance for Claude Code
-
-## CommandCenter Integration
-
-AI Arena can run standalone or integrate with [CommandCenter](https://commandcenter.cc):
-
-### Standalone
-```bash
-pnpm dev  # HTTP :3457, MCP stdio
-```
-
-### CommandCenter Integration
-```bash
-# Copy manifest to CommandCenter
-cp manifest.json /path/to/CommandCenter/tools/ai-arena/
-
-# Refresh tools
-pnpm hub:tools:refresh
-
-# Monitor events
-pnpm hub:events  # Tail arena.* topics
-```
-
-## Rubric Examples
-
-### README Generation
-
-```yaml
-# rubrics/readme.yaml
-weights:
-  correctness: 0.4
-  completeness: 0.3
-  structure: 0.2
-  style: 0.1
-keywords: [install, usage, configuration, license]
-```
-
-### Code Generation
-
-```yaml
-# rubrics/codegen.yaml
-weights:
-  correctness: 0.5
-  tests: 0.2
-  maintainability: 0.2
-  docs: 0.1
-```
-
-## Roadmap
-
-### Phase 1 (Complete) - Foundation
-- ✅ CNF schema and validation
-- ✅ Provider adapters (OpenAI, Google, Local)
-- ✅ Round-robin competition
-- ✅ Pluggable judge system (Heuristic + LLM)
-- ✅ HTTP API server
-- ✅ >80% test coverage
-
-### Phase 2 (Complete) - Advanced Features
-- ✅ Debate mode (2-turn AI-to-AI)
-- ✅ Anthropic provider (Claude 3.5)
-- ✅ xAI provider (Grok)
-- ✅ CNF compression with summarization
-- ✅ Artifact storage system
-- ✅ Structured trace events
-- ✅ HTTP endpoint: POST /debate
-- 📋 Jury/Blend modes (deferred to Phase 3)
-
-### Phase 3 - Task Executor
-- Proactive task execution
-- Research/Generate/Verify/Execute pipeline
-- Guardrails and safety
-
-### Phase 4 - Hub Integration
-- UI visualization
-- Real-time monitoring
-- Distributed judging
-- NATS mesh integration
-
-See [ROADMAP.md](docs/ROADMAP.md) for details.
-
-## Contributing
-
-AI Arena is in active development. Contributions welcome!
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes
-4. Push to the branch
-5. Open a Pull Request
-
-## License
-
-MIT License - see [LICENSE](LICENSE) file for details.
-
-## Acknowledgments
-
-- Inspired by the need for provider-agnostic AI interactions
-- Built with Universal Session System v2.1
-- Part of the PerformanceSuite ecosystem
-
----
-
-**Status**: Phase 1 in progress | **Repository**: https://github.com/PerformanceSuite/AI_Arena
+TypeScript 5.6+, Node.js, ES Modules, Hono, OpenAI/Anthropic/Google SDKs, Zod, YAML, Vitest, pnpm

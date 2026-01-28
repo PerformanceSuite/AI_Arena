@@ -56,3 +56,7 @@ session-last
 
 # Worktrees
 .worktrees/
+
+# AI Assistant local files
+CLAUDE.local.md
+.claude/archive/
